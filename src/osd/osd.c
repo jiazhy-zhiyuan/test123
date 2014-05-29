@@ -1,0 +1,162 @@
+#include "common.h"
+
+#include "decode.h"
+#include "encode.h"
+#include "split.h"
+
+#include "../common_sdk.h"
+#include "../common/system_def.h"
+
+#include "osd.h"
+
+static Vsys_AllocBufInfo		g_osdBuffer_rgb[OSD_MAX_CH][8];
+static AlgLink_OsdChWinParams		g_osdChParam_rgb[OSD_MAX_CH];
+
+extern void test_set_osd_content();
+
+
+// 只分配导播的osd，其它码流不需要
+void __OsdInit_onechannel()
+{
+	// 分配osd buffer
+	int oneOsdBufferSize = g_dev.osd_win_max_width * g_dev.osd_win_max_height * 3;		// RGB888占3字节
+	int j;
+	int status;
+
+	for(j = 0; j < g_dev.osd_win_max_window; j++) {
+		status = Vsys_allocBuf(0, oneOsdBufferSize, 128, &g_osdBuffer_rgb[0][j]);		// 128字节对齐
+		memset(g_osdBuffer_rgb[0][j].virtAddr, 0x0, oneOsdBufferSize);
+		OSA_assert(OSA_SOK == status);
+	}
+    
+	// set osd buffer
+	{
+		g_osdChParam_rgb[0].chId = OSD_ENCODE_CHANNELI_ID;
+		g_osdChParam_rgb[0].numWindows = g_dev.osd_win_max_window;
+		g_osdChParam_rgb[0].colorKey[0] = 0xff;
+		g_osdChParam_rgb[0].colorKey[1] = 0xff;
+		g_osdChParam_rgb[0].colorKey[2] = 0xff;
+
+		for(j = 0; j < g_dev.osd_win_max_window; j++) {
+			g_osdChParam_rgb[0].winPrm[j].startX		= 200 + 200 * j;
+			g_osdChParam_rgb[0].winPrm[j].startY		= 100 + 100 * j;
+			g_osdChParam_rgb[0].winPrm[j].width			= g_dev.osd_win_max_width;
+			g_osdChParam_rgb[0].winPrm[j].height		= g_dev.osd_win_max_height;
+			g_osdChParam_rgb[0].winPrm[j].lineOffset		= g_dev.osd_win_max_width;
+			g_osdChParam_rgb[0].winPrm[j].globalAlpha		= OSD_GLOBAL_ALPHA / 2;
+			g_osdChParam_rgb[0].winPrm[j].transperencyEnable	= OSD_TRANSPARENCY_ENABLE;
+			g_osdChParam_rgb[0].winPrm[j].enableWin		= OSD_ENABLE_WIN;
+			g_osdChParam_rgb[0].winPrm[j].addr[0][0]		= g_osdBuffer_rgb[0][j].physAddr;
+			g_osdChParam_rgb[0].winPrm[j].format		= SYSTEM_DF_RGB24_888;
+			//printf("i: %d, j: %d, addr: 0x%x\n", i, j, (int)g_osdBuffer_rgb[i][j].virtAddr);
+		}
+
+		VCAP_CHN_DYNAMIC_PARAM_S dynamicParams;
+		dynamicParams.osdChWinPrm = &g_osdChParam_rgb[0];
+		//Vcap_setDynamicParamChn(OSD_ENCODE_CHANNELI_ID, &dynamicParams, VCAP_OSDWINPRM);
+	}
+    
+	printf("osd init finish.\n");
+}
+
+void __OsdUninit()
+{
+	int TOTAL_VENC_CHANNEL = (g_dev.vi_channel_num + g_dev.swms_encode_num) * g_dev.stream_type;
+	int oneOsdBufferSize = g_dev.osd_win_max_width * g_dev.osd_win_max_height * 3;		// RGB888占3字节
+	int i, j;
+	int status;
+	//for(i = 0; i < TOTAL_VENC_CHANNEL; i++) {
+	for(i = 0; i < 1; i++) {
+		for(j = 0; j < g_dev.osd_win_max_window; j++) {
+			Vsys_freeBuf(0, g_osdBuffer_rgb[i][j].virtAddr, oneOsdBufferSize);
+		}
+	}
+	printf("osd uninit finish.\n");
+}
+
+void __osd_set_buffer(int chId, int index, ENCODE_TITLE_PARAM *pParam)
+{
+	int TOTAL_VENC_CHANNEL = (g_dev.vi_channel_num + g_dev.swms_encode_num) * g_dev.stream_type;
+	int oneOsdBufferSize = g_dev.osd_win_max_width * g_dev.osd_win_max_height * 3;		// RGB888占3字节
+
+	if(chId >= TOTAL_VENC_CHANNEL) {
+		printf("WARNING: osd buffer param error, venc channel: %d-%d.\n", chId, TOTAL_VENC_CHANNEL);
+		return;
+	}
+
+	if(index >= g_dev.osd_win_max_window) {
+		printf("WARNING: osd buffer param error, osd max window: %d-%d.\n", index, g_dev.osd_win_max_window);
+		return;
+	}
+
+	if(NULL == pParam->raster) {
+		printf("WARNING: osd buffer param error, buf is null.\n");
+		return;
+	}
+
+	if(pParam->width > g_dev.osd_win_max_width) {
+		printf("WARNING: osd buffer param error, width overflow: %d-%d.\n", pParam->width, g_dev.osd_win_max_width);
+		return;
+	}
+
+	if(pParam->height > g_dev.osd_win_max_height) {
+		printf("WARNING: osd buffer param error, height overflow: %d-%d.\n", pParam->height, g_dev.osd_win_max_height);
+		return;
+	}
+
+	if(pParam->size > oneOsdBufferSize) {
+		printf("WARNING: osd buffer param error, buf size overflow: %d-%d.\n", pParam->size, oneOsdBufferSize);
+		return;
+	}
+
+	int alpha = pParam->alpha * 0x80 / 100;		// 百分比转范围: 0到0x80, 0是全透明只显示视频，0x80是不透明
+	printf("__osd_set_buffer(); i: %d, j: %d, size: %d, addr: 0x%x\n", chId, index, pParam->size, (int)g_osdBuffer_rgb[0][index].virtAddr);
+	printf("__osd_set_buffer(), chId: %d, index: %d, x: %d, y: %d, width: %d, height: %d, alpha: %d, enable: %d, colorkey: 0x%x\n"
+		, chId, index, pParam->x, pParam->y, pParam->width, pParam->height
+		, alpha
+		, pParam->enable
+		, pParam->colorkey);
+
+	g_osdChParam_rgb[0].colorKey[0] = (pParam->colorkey >> 16) & 0xff;
+	g_osdChParam_rgb[0].colorKey[1] = (pParam->colorkey >> 8)  & 0xff;
+	g_osdChParam_rgb[0].colorKey[2] = (pParam->colorkey >> 0)  & 0xff;
+
+	g_osdChParam_rgb[0].winPrm[index].startX		= pParam->x;
+	g_osdChParam_rgb[0].winPrm[index].startY		= pParam->y;
+
+	g_osdChParam_rgb[0].winPrm[index].globalAlpha		= alpha;
+	g_osdChParam_rgb[0].winPrm[index].transperencyEnable	= OSD_TRANSPARENCY_ENABLE;
+	g_osdChParam_rgb[0].winPrm[index].enableWin		= pParam->enable;
+	if(0 == pParam->enable)
+		g_osdChParam_rgb[0].winPrm[index].globalAlpha	= 0;
+	g_osdChParam_rgb[0].winPrm[index].addr[0][0]		= g_osdBuffer_rgb[0][index].physAddr;
+	g_osdChParam_rgb[0].winPrm[index].format		= SYSTEM_DF_RGB24_888;
+
+	printf("clear buffer to colorkey.\n");
+	int i;
+	// 先把缓冲全部设置透明色
+	unsigned char *p = g_osdBuffer_rgb[0][index].virtAddr;
+	for(i = 0; i < g_dev.osd_win_max_width * g_dev.osd_win_max_height; i++) {
+		p[3 * i + 0] = g_osdChParam_rgb[0].colorKey[0];
+		p[3 * i + 1] = g_osdChParam_rgb[0].colorKey[1];
+		p[3 * i + 2] = g_osdChParam_rgb[0].colorKey[2];
+	}
+
+	// 拷贝图像
+	printf("copy user osd to buffer.\n");
+	for(i = 0; i < pParam->height; i++) {
+		void *offset_dst = g_osdBuffer_rgb[0][index].virtAddr + i * g_dev.osd_win_max_width * 3;
+		void *offset_src = pParam->raster + pParam->width * i * 3;
+		int size = pParam->width * 3;
+		memcpy(offset_dst, offset_src, size);
+	}
+}
+
+void __osd_set_position(int chId, int index, ENCODE_TITLE_PARAM *pParam)
+{
+	printf("__osd_set_position()\n");
+	VCAP_CHN_DYNAMIC_PARAM_S dynamicParams;
+	dynamicParams.osdChWinPrm = &g_osdChParam_rgb[0];
+	Vcap_setDynamicParamChn(chId, &dynamicParams, VCAP_OSDWINPRM);
+}
+

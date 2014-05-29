@@ -1,0 +1,269 @@
+#include "common.h"
+
+#include "decode.h"
+#include "encode.h"
+#include "split.h"
+
+#include "../common_sdk.h"
+#include "../common/system_def.h"
+
+#define SWMS_INIT_WIDTH		1920
+#define SWMS_INIT_HEIGHT	1080
+SwMsLink_CreateParams	g_swms[ETAH_SWMS_ID_MAX];
+
+void SwmsLayoutInit()
+{
+	int i, j;
+
+	memset(g_swms, 0x0, sizeof(SwMsLink_CreateParams) * ETAH_SWMS_ID_MAX);
+	MULTICH_INIT_STRUCT(SwMsLink_CreateParams,		g_swms[0]);
+	MULTICH_INIT_STRUCT(SwMsLink_CreateParams,		g_swms[1]);
+	MULTICH_INIT_STRUCT(SwMsLink_CreateParams,		g_swms[2]);
+	MULTICH_INIT_STRUCT(SwMsLink_CreateParams,		g_swms[3]);
+
+	for(i = 0; i < ETAH_SWMS_ID_MAX; i++) {
+		g_swms[i].layoutPrm.numWin = SWMS_MAX_WIN_PER_LINK;
+
+		for(j = 0; j < SWMS_MAX_WIN_PER_LINK; j++) {
+			g_swms[i].layoutPrm.winInfo[j].bypass			= FALSE;
+			g_swms[i].layoutPrm.winInfo[j].channelNum		= j;
+			g_swms[i].layoutPrm.winInfo[j].startX			= SWMS_INIT_WIDTH  / 4 * (j % 4);
+			g_swms[i].layoutPrm.winInfo[j].startY			= SWMS_INIT_HEIGHT / 4 * (j / 4);
+			g_swms[i].layoutPrm.winInfo[j].width			= SWMS_INIT_WIDTH  / 4;
+			g_swms[i].layoutPrm.winInfo[j].height			= SWMS_INIT_HEIGHT / 4;
+		}
+	}
+	printf("default swms layout init finish.\n");
+}
+
+int SplitInit(void)
+{
+	return 0;
+}
+
+int SplitUnit(void)
+{
+	return 0;
+}
+
+int __check_channel(int channelNR, VIDEO_RECT *rects)
+{
+	int i, j;
+
+	for(i = 0; i < channelNR; i++) {
+		for(j = i + 1; j < channelNR; j++) {
+			if(rects[j].channelNum == rects[i].channelNum) {
+				printf("rects: i: %d, j: %d, channelNum: %d\n", i, j, rects[i].channelNum);
+				return -1;
+			}
+		}
+	}
+
+	return 0;
+}
+
+void __sort_by_layer(int channelNR, VIDEO_RECT *rects)
+{
+	int i, j;
+
+	for(i = 0; i < channelNR; i++) {
+		for(j = i + 1; j < channelNR; j++) {
+			if(rects[j].layer < rects[i].layer) {
+				VIDEO_RECT tmp = rects[i];
+				rects[i] = rects[j];
+				rects[j] = tmp;
+			}
+		}
+	}
+}
+
+static int old_resolution[4] = {-1, -1, -1, -1 };
+static int __split_displaySetResolution(UInt32 displayId, UInt32 resolution)
+{
+	VDIS_MOSAIC_S vdisMosaicParams;
+	VSYS_PARAMS_S sysContextInfo;
+
+	if(old_resolution[displayId] == resolution)
+		return 0;
+	else
+		old_resolution[displayId] = resolution;
+
+	if (Vdis_isSupportedDisplay(displayId)) {
+		printf("Demo_displaySetResolution(): displayId is %d, resolution is %d\n", displayId, resolution);
+		Vsys_getContext(&sysContextInfo);
+
+		Vdis_stopDrv(displayId);
+		memset(&vdisMosaicParams, 0, sizeof(VDIS_MOSAIC_S));
+		/* Update the resolution that we are changing into */
+		Vdis_setResolution(displayId, resolution);
+#if 0
+		/* Start with default layout */
+		Demo_swMsGenerateLayout(displayId
+				, 0
+				, gDemo_info.maxVdisChannels
+				, layoutId
+				, &vdisMosaicParams, FALSE
+				, gDemo_info.Type
+				, Vdis_getSwMsLayoutResolution(displayId));
+		Vdis_setMosaicParams(displayId, &vdisMosaicParams);
+#endif
+		Vdis_startDrv(displayId);
+
+	}
+
+	return 0;
+}
+
+int __SpitSetCompositorCommon(int swmsID, int channelNR, VIDEO_RECT *rects)
+{
+	int i, width, height;
+	if(ETAH_SWMS_ID_SD == swmsID) {
+		width =  720;
+		height = 480;
+	} else {
+		width  = 1920;
+		height = 1080;
+	}
+
+	if(__check_channel(channelNR, rects)) {
+		printf("__SpitSetCompositorCommon() check channel error, channelNR: %d\n", channelNR);
+		return -1;
+	}
+	__sort_by_layer(channelNR, rects);
+	g_swms[swmsID].layoutPrm.numWin = channelNR;
+	printf("swmsID: %d, width: %d, height: %d, channelNR: %d\n", swmsID, width, height, channelNR);
+	printf("%s() entry, ID: %d, mosaic *fixed* param: width: %d, height: %d\n", __func__, gVdisModuleContext.swMsId[swmsID], width, height);
+
+	for(i = 0; i < channelNR; i++) {
+		 g_swms[swmsID].layoutPrm.winInfo[i].bypass		= FALSE;
+		 g_swms[swmsID].layoutPrm.winInfo[i].channelNum		= rects[i].channelNum;
+		 g_swms[swmsID].layoutPrm.winInfo[i].startX		= (COORDINATE_MODE_PIXEL == rects[i].coordinate_mode)? (rects[i].startX): (rects[i].startX * width  / 100);
+		 g_swms[swmsID].layoutPrm.winInfo[i].startY		= (COORDINATE_MODE_PIXEL == rects[i].coordinate_mode)? (rects[i].startY): (rects[i].startY * height / 100);
+		 g_swms[swmsID].layoutPrm.winInfo[i].width		= (COORDINATE_MODE_PIXEL == rects[i].coordinate_mode)? (rects[i].width):  (rects[i].width  * width  / 100);
+		 g_swms[swmsID].layoutPrm.winInfo[i].height		= (COORDINATE_MODE_PIXEL == rects[i].coordinate_mode)? (rects[i].height): (rects[i].height * height / 100);
+		 printf("\t\tchannelNum: %d, startX: %d, startY: %d, width: %d, height: %d, coordinate_mode: %d\n"
+			, g_swms[swmsID].layoutPrm.winInfo[i].channelNum
+			, g_swms[swmsID].layoutPrm.winInfo[i].startX
+			, g_swms[swmsID].layoutPrm.winInfo[i].startY
+			, g_swms[swmsID].layoutPrm.winInfo[i].width
+			, g_swms[swmsID].layoutPrm.winInfo[i].height
+			, rects[i].coordinate_mode
+			);
+	}
+
+	printf("==============SYSTEM_SW_MS_LINK_CMD_SWITCH_LAYOUT================>>>\n");
+	System_linkControl(gVdisModuleContext.swMsId[swmsID]
+		, SYSTEM_SW_MS_LINK_CMD_SWITCH_LAYOUT
+		, &g_swms[swmsID].layoutPrm
+		, sizeof(g_swms[swmsID].layoutPrm)
+		, TRUE);
+	printf("=================================================================<<<\n");
+
+	return 0;
+}
+
+int SplitSetCompositorMosaic(ETAH_SWMS_ID compositorID, int channelNR, VIDEO_RECT *rects)
+{
+	printf("%s(): compositorID: %d, channelNR: %d\n", __func__, compositorID, channelNR);
+	if(compositorID < 0 || compositorID >= ETAH_SWMS_ID_MAX) {
+	//if(compositorID < 0 || compositorID >= 1) {
+		printf("%s compositorID error: %d\n", __func__, compositorID);
+		return -1;
+	}
+    if(compositorID == ETAH_SWMS_ID_SD){
+        compositorID = ETAH_SWMS_ID_MOSAIC;
+    }else if(compositorID == ETAH_SWMS_ID_HDCOMP){
+        compositorID = ETAH_SWMS_ID_HDMI;
+    }else if(compositorID == ETAH_SWMS_ID_DVO2){
+        compositorID = ETAH_SWMS_ID_MOSAIC;
+    }
+	__SpitSetCompositorCommon(compositorID, channelNR, rects);
+	return 0;
+}
+
+int SplitSetDisplayResolution(ETAH_SWMS_ID compositorID, int outputResolution)
+{
+	if(compositorID < 0 || compositorID >= ETAH_SWMS_ID_MAX) {
+        //if(compositorID < 0 || compositorID >= 1) {
+		printf("%s compositorID error: %d\n", __func__, compositorID);
+		return -1;
+	}
+
+    
+	VDIS_DEV dev;
+	switch(compositorID) {
+		case ETAH_SWMS_ID_HDMI:
+			dev = VDIS_DEV_HDMI;
+			break;
+		case ETAH_SWMS_ID_HDCOMP:
+			dev = VDIS_DEV_HDCOMP;
+			break;
+		case ETAH_SWMS_ID_SD:
+			printf("SplitSetDisplayResolution() error compositorID: %d, not support SD\n", compositorID);
+			return -1;
+			break;
+		default:
+			printf("SplitSetDisplayResolution() error compositorID: %d\n", compositorID);
+			return -1;
+	}
+
+	printf("SplitSetDisplayResolution, device is %d\n", dev);
+	// 分辨率重置: 注意上面的swms的坐标不要超过分辨率
+	//__split_displaySetResolution(VDIS_DEV_HDMI, outputResolution);
+	__split_displaySetResolution(dev, outputResolution);
+	if(VDIS_DEV_HDCOMP == dev) {
+		vga_output_patch(outputResolution);
+	}
+
+	return 0;
+}
+
+int SplitSetCompositorDevice(int compositorID, int device)
+{
+	//x
+	return 0;
+}
+
+int CaptureSetVideoPortStandard(int channel, int width, int height)
+{
+	return 0;
+
+#if 0
+	if(channel < 0 || channel >= SYSTEM_CAPTURE_INST_MAX)
+		return;
+
+	printf("=============channel: %d, width: %d, height: %d==============\n", channel, width, height);
+#if 1
+	VCAP_CHN_DYNAMIC_PARAM_S params;
+	memset(&params, 0, sizeof(params));
+	params.inputResolution.chId   = channel;
+	params.inputResolution.width  = width;
+	params.inputResolution.height = height;
+	Vcap_setDynamicParamChn(channel, &params, VCAP_INPUT_RESOLUTION);
+#endif
+
+#if 0
+	memset(&params, 0, sizeof(params));
+	params.chDynamicRes.pathId = (VCAP_PATH_E)1;		// 1:primary stream, 2:secondary stream
+	params.chDynamicRes.width  = width;
+	params.chDynamicRes.height = height;
+	Vcap_setDynamicParamChn(channel, &params, VCAP_RESOLUTION);
+#endif
+#endif
+	return 0;
+}
+
+/*
+int SplitEnable(int compositorID)
+{
+	System_linkStart(SYSTEM_LINK_ID_SW_MS_MULTI_INST_0 + compositorID);
+	return 0;
+}
+
+int SplitDisable(int compositorID)
+{
+	System_linkStop(SYSTEM_LINK_ID_SW_MS_MULTI_INST_0 + compositorID);
+	return 0;
+}
+*/
+

@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/etah/!svn/ver/2312/linux/dm8168/src/libcapture40/include
+END
+split.h
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/etah/!svn/ver/2312/linux/dm8168/src/libcapture40/include/split.h
+END
+encode.h
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/etah/!svn/ver/2168/linux/dm8168/src/libcapture40/include/encode.h
+END
+decode.h
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/etah/!svn/ver/2140/linux/dm8168/src/libcapture40/include/decode.h
+END
+system.h
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/etah/!svn/ver/2308/linux/dm8168/src/libcapture40/include/system.h
+END
+common.h
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/etah/!svn/ver/2312/linux/dm8168/src/libcapture40/include/common.h
+END

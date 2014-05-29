@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/etah/!svn/ver/2319/linux/dm8168/src/libcapture40/src/common
+END
+patch.c
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/etah/!svn/ver/2187/linux/dm8168/src/libcapture40/src/common/patch.c
+END
+tiSystem.c
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/etah/!svn/ver/2319/linux/dm8168/src/libcapture40/src/common/tiSystem.c
+END
+crash_dump_analyzer_format.c
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/svn/etah/!svn/ver/2037/linux/dm8168/src/libcapture40/src/common/crash_dump_analyzer_format.c
+END
+debug.c
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/etah/!svn/ver/2207/linux/dm8168/src/libcapture40/src/common/debug.c
+END
+crash_dump_analyzer_format.h
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/svn/etah/!svn/ver/2037/linux/dm8168/src/libcapture40/src/common/crash_dump_analyzer_format.h
+END
+system_def.h
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/etah/!svn/ver/2129/linux/dm8168/src/libcapture40/src/common/system_def.h
+END

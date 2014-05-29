@@ -1,0 +1,71 @@
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/etah/!svn/ver/2345/linux/dm8168/src/libcapture40/test
+END
+decode_test.c
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/etah/!svn/ver/2249/linux/dm8168/src/libcapture40/test/decode_test.c
+END
+nipdebug.h
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/etah/!svn/ver/2066/linux/dm8168/src/libcapture40/test/nipdebug.h
+END
+main.c
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/etah/!svn/ver/2292/linux/dm8168/src/libcapture40/test/main.c
+END
+bswriter.h
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/etah/!svn/ver/2037/linux/dm8168/src/libcapture40/test/bswriter.h
+END
+link_test_encode.c
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/etah/!svn/ver/2207/linux/dm8168/src/libcapture40/test/link_test_encode.c
+END
+bsreader.h
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/etah/!svn/ver/2037/linux/dm8168/src/libcapture40/test/bsreader.h
+END
+ti_swosd_logo_224x30_rgb.h
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/etah/!svn/ver/2240/linux/dm8168/src/libcapture40/test/ti_swosd_logo_224x30_rgb.h
+END
+link_test_encode.h
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/etah/!svn/ver/2060/linux/dm8168/src/libcapture40/test/link_test_encode.h
+END
+link_test_decode.c
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/etah/!svn/ver/2207/linux/dm8168/src/libcapture40/test/link_test_decode.c
+END
+main_split.c
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/etah/!svn/ver/2365/linux/dm8168/src/libcapture40/test/main_split.c
+END
+link_test_display.c
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/etah/!svn/ver/2307/linux/dm8168/src/libcapture40/test/link_test_display.c
+END

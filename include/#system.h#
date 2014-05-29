@@ -1,0 +1,77 @@
+/*
+ 
+			  ,.---.   
+		,,,,	 /    _ `.
+		 \\\\	/      \  )
+		  |||| /\/``-.__\/
+		  ::::/\/_
+  {{`-.__.-'(`(^^(^^^(^ 9 `.========='
+ {{{{{{ { ( ( (  (   (-----:=
+  {{.-'~~'-.(,(,,(,,,(__6_.'=========.
+		  ::::\/\ 
+		  |||| \/\  ,-'/\
+		 ////	\ `` _/  )
+		''''	 \  `	/
+			  `---''
+
+ */
+#ifndef __SYSTEM_ETAH_20130412_H_
+#define __SYSTEM_ETAH_20130412_H_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define MAX_VI_CHN		8
+#define MAX_DE_CHN		16
+
+typedef struct {
+	int		vi_channel_num;				// 本地采集路数, 不能随便改，可能和select link有关!
+	int		decode_channel_num;			// 解码路数
+	int		stream_type;				// 1是只有主码流，2是有主次码流
+
+	int		swms_encode_num;			// 拼接导播路数: 只有编码
+
+	int		swms_display_num;			// 拼接显示路数: 只有显示，等于下面4个swms_support_类型相加的总和
+	int		swms_support_hdmi;
+	int		swms_support_ypbpr;
+	int		swms_support_dvo2;
+	int		swms_support_sd;
+
+	int		ai_channel_num;				// 音频输入路数
+	int		ao_channel_num;				// 音频输出路数
+	int		ao_device_num;				// 音频输出设备个数(hdmi,3106)
+	int		decode_max_width;			// 解码码流最大宽度
+	int		decode_max_height;			// 解码码流最大高度
+
+	int		osd_win_max_width;			// osd最大宽度
+	int		osd_win_max_height;			// osd最大高度
+	int		osd_win_max_window;			// osd最大个数
+} DEVICE_CAPABILITY;
+
+typedef struct {
+	// 视频编码
+	int		video_encode_cnt[MAX_VI_CHN][2];	// 主次码流编码次数和总共码流大小
+	long long	video_encode_size[MAX_VI_CHN][2];
+
+	// 视频解码
+	int		video_decode_cnt[MAX_DE_CHN];		// 解码统计
+	long long	video_decode_size[MAX_DE_CHN];
+} SYSTEM_DEBUG_INFO;
+
+int SystemSetProductID(const char *productID);			// 设置产品型号
+int SystemOutputVpssVicpInfo(int flags);			// 内部调试1
+int SystemGetDebug(SYSTEM_DEBUG_INFO *info);
+
+int SystemInit();							// libcapture所有api调用前必须先调用这个函数
+int SystemUninit();
+
+int SystemGetProductCapability(DEVICE_CAPABILITY *cap);	// 获取设备能力
+int SystemGetVersion(char *version);				// 获取库的版本
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif
+

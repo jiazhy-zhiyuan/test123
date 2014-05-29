@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/etah/!svn/ver/2342/linux/dm8168/src/libcapture40/src/encode
+END
+encode.c
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/etah/!svn/ver/2313/linux/dm8168/src/libcapture40/src/encode/encode.c
+END
+vcap_venc_vdis.h
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/etah/!svn/ver/2207/linux/dm8168/src/libcapture40/src/encode/vcap_venc_vdis.h
+END
+encode_def.h
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/etah/!svn/ver/2086/linux/dm8168/src/libcapture40/src/encode/encode_def.h
+END
+vcap_venc_vdis_bits_wr.c
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svn/etah/!svn/ver/2342/linux/dm8168/src/libcapture40/src/encode/vcap_venc_vdis_bits_wr.c
+END

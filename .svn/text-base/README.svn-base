@@ -1,0 +1,9 @@
+需要设置2个环境变量到/home/username/.bash_profile：
+
+(1)path里面设置编译器路径，例如：
+PATH=/home/wyt/DVRRDK_04.00.00.03/ti_tools/cgt_a8/arago/linux-devkit/bin:$PATH
+
+(2)设置sdk路径，例如：
+export DVRRDK_PATH=/home/wyt/DVRRDK_04.00.00.03
+
+2013.9.23

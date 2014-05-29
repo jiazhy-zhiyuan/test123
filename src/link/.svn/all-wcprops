@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/etah/!svn/ver/2345/linux/dm8168/src/libcapture40/src/link
+END
+link_def-6800A.h
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/etah/!svn/ver/2345/linux/dm8168/src/libcapture40/src/link/link_def-6800A.h
+END
+link-5300A.c
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/etah/!svn/ver/2365/linux/dm8168/src/libcapture40/src/link/link-5300A.c
+END
+link_def-5300A.h
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/etah/!svn/ver/2365/linux/dm8168/src/libcapture40/src/link/link_def-5300A.h
+END
+link_prm-6800A.c
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/etah/!svn/ver/2365/linux/dm8168/src/libcapture40/src/link/link_prm-6800A.c
+END
+link-6800A.c
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/etah/!svn/ver/2345/linux/dm8168/src/libcapture40/src/link/link-6800A.c
+END
+link_other-6800A.c
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/etah/!svn/ver/2345/linux/dm8168/src/libcapture40/src/link/link_other-6800A.c
+END

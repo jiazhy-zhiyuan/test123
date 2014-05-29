@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/etah/!svn/ver/2037/linux/dm8168/src/libcapture40/src/i2c
+END
+readme.txt
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/etah/!svn/ver/2037/linux/dm8168/src/libcapture40/src/i2c/readme.txt
+END
+i2cwrapper.c
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/etah/!svn/ver/2037/linux/dm8168/src/libcapture40/src/i2c/i2cwrapper.c
+END
+i2cwrapper.h
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/etah/!svn/ver/2037/linux/dm8168/src/libcapture40/src/i2c/i2cwrapper.h
+END
